@@ -1,0 +1,22 @@
+{
+  "name": "@b2b-lead-gen/email-engine",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@b2b-lead-gen/shared": "workspace:*",
+    "html-to-text": "^9.0.5",
+    "imapflow": "^1.0.180",
+    "mailparser": "^3.7.2",
+    "nodemailer": "^6.10.0"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.4.6",
+    "@types/nodemailer": "^6.4.17",
+    "typescript": "^5.8.0"
+  }
+}

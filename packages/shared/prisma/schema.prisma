@@ -1,0 +1,420 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================
+// Multi-tenant core
+// ============================================
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  plan      String   @default("free")
+  status    String   @default("active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  companies     Company[]
+  contacts      Contact[]
+  campaigns     Campaign[]
+  templates     EmailTemplate[]
+  emailAccounts EmailAccount[]
+  sendChannels  SendChannel[]
+  blacklist     Blacklist[]
+  emailPatterns EmailPattern[]
+  inboxThreads  InboxThread[]
+  sequences     Sequence[]
+  dailyStats    DailyStats[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("sales")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id])
+  assignedThreads InboxThread[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// ============================================
+// Leads module
+// ============================================
+model Company {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  name          String
+  domain        String
+  industry      String?
+  country       String?
+  size          String?
+  website       String?
+  customsSource String?  @map("customs_source")
+  score         Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  contacts Contact[]
+
+  @@unique([tenantId, domain])
+  @@index([tenantId, industry])
+  @@index([tenantId, country])
+  @@index([tenantId, score])
+  @@map("companies")
+}
+
+model Contact {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  companyId          String   @map("company_id")
+  firstName          String   @map("first_name")
+  lastName           String   @map("last_name")
+  email              String
+  position           String?
+  linkedinUrl        String?  @map("linkedin_url")
+  phone              String?
+  verificationStatus String   @default("pending") @map("verification_status")
+  patternMatched     Boolean  @default(false) @map("pattern_matched")
+  score              Int      @default(0)
+  status             String   @default("new")
+  source             String   @default("manual_import")
+  sourceData         Json?    @map("source_data")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  company        Company           @relation(fields: [companyId], references: [id])
+  tenant         Tenant            @relation(fields: [tenantId], references: [id])
+  campaignContacts CampaignContact[]
+  inboxThreads   InboxThread[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, verificationStatus])
+  @@index([tenantId, source])
+  @@map("contacts")
+}
+
+model LeadSource {
+  id        String   @id @default(cuid())
+  contactId String   @map("contact_id")
+  source    String
+  rawData   Json     @map("raw_data")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([contactId])
+  @@map("lead_sources")
+}
+
+model EmailPattern {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  domain     String
+  pattern    String
+  confidence Float    @default(0)
+  sources    Json     @default("[]")
+  emails     String[] @default([])
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, domain])
+  @@map("email_patterns")
+}
+
+// ============================================
+// Campaigns & templates
+// ============================================
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  subject   String
+  body      String
+  variables Json     @default("[]")
+  language  String   @default("zh")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  campaigns Campaign[]
+  sequences Sequence[]
+
+  @@index([tenantId])
+  @@map("email_templates")
+}
+
+model Sequence {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  name       String
+  templateId String?  @map("template_id")
+  steps      Json     @default("[]")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  template  EmailTemplate? @relation(fields: [templateId], references: [id])
+  campaigns Campaign[]
+
+  @@index([tenantId])
+  @@map("sequences")
+}
+
+model Campaign {
+  id            String    @id @default(cuid())
+  tenantId      String    @map("tenant_id")
+  name          String
+  industryFilter Json     @default("[]") @map("industry_filter")
+  countryFilter  Json     @default("[]") @map("country_filter")
+  status        String    @default("draft")
+  templateId    String?   @map("template_id")
+  sequenceId    String?   @map("sequence_id")
+  dailyLimit    Int       @default(50) @map("daily_limit")
+  timeWindow    Json      @default("{\"start\":\"09:00\",\"end\":\"18:00\"}") @map("time_window")
+  totalTargets  Int       @default(0) @map("total_targets")
+  totalSent     Int       @default(0) @map("total_sent")
+  totalReplied  Int       @default(0) @map("total_replied")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  tenant            Tenant            @relation(fields: [tenantId], references: [id])
+  template          EmailTemplate?    @relation(fields: [templateId], references: [id])
+  sequence          Sequence?         @relation(fields: [sequenceId], references: [id])
+  campaignContacts  CampaignContact[]
+  inboxThreads   InboxThread[]
+
+  @@index([tenantId, status])
+  @@map("campaigns")
+}
+
+model CampaignContact {
+  id              String    @id @default(cuid())
+  campaignId      String    @map("campaign_id")
+  contactId       String    @map("contact_id")
+  status          String    @default("pending")
+  sentAt          DateTime? @map("sent_at")
+  openedAt        DateTime? @map("opened_at")
+  clickedAt       DateTime? @map("clicked_at")
+  repliedAt       DateTime? @map("replied_at")
+  unsubscribedAt  DateTime? @map("unsubscribed_at")
+  bounceType      String?   @map("bounce_type")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  campaign  Campaign @relation(fields: [campaignId], references: [id])
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  sendQueue SendQueue[]
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId, status])
+  @@map("campaign_contacts")
+}
+
+model SendQueue {
+  id                String    @id @default(cuid())
+  tenantId          String    @map("tenant_id")
+  campaignContactId String    @map("campaign_contact_id")
+  channel           String    @default("brevo")
+  toEmail           String    @map("to_email")
+  subject           String
+  body              String
+  status            String    @default("queued")
+  messageId         String?   @map("message_id")
+  trackingId        String?   @map("tracking_id")
+  sentAt            DateTime? @map("sent_at")
+  deliveredAt       DateTime? @map("delivered_at")
+  openedAt          DateTime? @map("opened_at")
+  clickedAt         DateTime? @map("clicked_at")
+  errorMessage      String?   @map("error_message")
+  retryCount        Int       @default(0) @map("retry_count")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  campaignContact CampaignContact @relation(fields: [campaignContactId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, channel, status])
+  @@map("send_queue")
+}
+
+// ============================================
+// Inbox module
+// ============================================
+model EmailAccount {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  email        String
+  smtpConfig   Json     @map("smtp_config")
+  imapConfig   Json     @map("imap_config")
+  dailyLimit   Int      @default(500) @map("daily_limit")
+  dailySent    Int      @default(0) @map("daily_sent")
+  status       String   @default("active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("email_accounts")
+}
+
+model InboxThread {
+  id            String   @id @default(cuid())
+  tenantId      String   @map("tenant_id")
+  contactId     String?  @map("contact_id")
+  campaignId    String?  @map("campaign_id")
+  subject       String
+  lastMessageAt DateTime @map("last_message_at")
+  status        String   @default("new")
+  assignedUserId String?  @map("assigned_user_id")
+  isHotLead     Boolean  @default(false) @map("is_hot_lead")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  contact   Contact?         @relation(fields: [contactId], references: [id])
+  campaign  Campaign?        @relation(fields: [campaignId], references: [id])
+  assignedUser User?         @relation(fields: [assignedUserId], references: [id])
+  messages  InboxMessage[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, isHotLead])
+  @@map("inbox_threads")
+}
+
+model InboxMessage {
+  id          String   @id @default(cuid())
+  threadId    String   @map("thread_id")
+  direction   String   @default("inbound")
+  fromEmail   String   @map("from_email")
+  toEmail     String   @map("to_email")
+  body        String
+  bodyText    String?  @map("body_text")
+  headers     Json     @default("{}")
+  attachments Json     @default("[]")
+  isRead      Boolean  @default(false) @map("is_read")
+  isAutoReply Boolean  @default(false) @map("is_auto_reply")
+  receivedAt  DateTime @default(now()) @map("received_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  thread InboxThread @relation(fields: [threadId], references: [id])
+
+  @@index([threadId])
+  @@map("inbox_messages")
+}
+
+// ============================================
+// Send channels (multi-provider management)
+// ============================================
+model SendChannel {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  provider   String
+  apiKey     String   @map("api_key")
+  dailyLimit Int      @default(300) @map("daily_limit")
+  dailySent  Int      @default(0) @map("daily_sent")
+  status     String   @default("active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, provider])
+  @@index([tenantId])
+  @@map("send_channels")
+}
+
+// ============================================
+// Risk control
+// ============================================
+model Blacklist {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  type      String   // "email" | "domain"
+  value     String
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, type, value])
+  @@map("blacklist")
+}
+
+model BounceLog {
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  campaignContactId String?  @map("campaign_contact_id")
+  email             String
+  type              String
+  rawResponse       Json?    @map("raw_response")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, email])
+  @@map("bounce_logs")
+}
+
+model UnsubscribeLog {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  email      String
+  campaignId String?  @map("campaign_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, email])
+  @@map("unsubscribe_logs")
+}
+
+// ============================================
+// Statistics
+// ============================================
+model DailyStats {
+  id             String   @id @default(cuid())
+  tenantId       String   @map("tenant_id")
+  date           DateTime
+  collectedCount Int      @default(0) @map("collected_count")
+  verifiedCount  Int      @default(0) @map("verified_count")
+  sentCount      Int      @default(0) @map("sent_count")
+  openedCount    Int      @default(0) @map("opened_count")
+  clickedCount   Int      @default(0) @map("clicked_count")
+  repliedCount   Int      @default(0) @map("replied_count")
+  bouncedCount   Int      @default(0) @map("bounced_count")
+  hotLeadCount   Int      @default(0) @map("hot_lead_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, date])
+  @@map("daily_stats")
+}
+
+model CampaignStats {
+  id            String   @id @default(cuid())
+  campaignId    String   @map("campaign_id")
+  date          DateTime
+  sentCount     Int      @default(0) @map("sent_count")
+  openedCount   Int      @default(0) @map("opened_count")
+  clickedCount  Int      @default(0) @map("clicked_count")
+  repliedCount  Int      @default(0) @map("replied_count")
+  bouncedCount  Int      @default(0) @map("bounced_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([campaignId, date])
+  @@map("campaign_stats")
+}
