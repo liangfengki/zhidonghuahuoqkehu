@@ -6,6 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Sparkles, User, Mail, KeyRound, Building2 } from "lucide-react";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -14,24 +15,60 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault(); setLoading(true);
-    try { await register(form); toast.success("注册成功！"); router.push("/leads"); }
-    catch (err: any) { toast.error(err.message || "注册失败"); }
-    finally { setLoading(false); }
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await register(form);
+      toast.success("注册成功，欢迎加入");
+      router.push("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "注册失败");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-        <div className="text-center"><h1 className="text-3xl font-bold">🚀 企业获客平台</h1><p className="text-sm text-gray-500 mt-2">创建你的账户</p></div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div><label className="text-sm font-medium">姓名</label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="张三" required /></div>
-          <div><label className="text-sm font-medium">邮箱</label><Input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="you@example.com" required /></div>
-          <div><label className="text-sm font-medium">密码</label><Input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="至少6位" required /></div>
-          <div><label className="text-sm font-medium">企业名（可选）</label><Input value={form.companyName} onChange={e => setForm({...form, companyName: e.target.value})} placeholder="你的公司" /></div>
-          <Button type="submit" className="w-full" disabled={loading}>{loading ? "注册中..." : "注册"}</Button>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-bg)] via-[var(--color-bg)] to-[var(--color-accent)]/10" />
+      <div className="absolute bottom-1/3 -left-20 w-96 h-96 bg-[var(--color-accent)]/15 rounded-full blur-3xl" />
+      <div className="absolute top-1/4 -right-20 w-80 h-80 bg-[var(--color-accent)]/10 rounded-full blur-3xl" />
+
+      <div className="relative w-full max-w-md glass-heavy rounded-3xl p-8 space-y-6 animate-in fade-in zoom-in duration-500">
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-12 h-12 rounded-2xl bg-[var(--color-accent)] flex items-center justify-center shadow-xl shadow-[var(--color-accent)]/30">
+            <Sparkles size={22} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--color-fg)]">创建新账户</h1>
+          <p className="text-sm text-[var(--color-muted-fg)]">开启 AI 驱动的获客之旅</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="relative">
+            <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+            <Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="pl-10" placeholder="姓名" required />
+          </div>
+          <div className="relative">
+            <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+            <Input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="pl-10" placeholder="you@example.com" required />
+          </div>
+          <div className="relative">
+            <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+            <Input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="pl-10" placeholder="至少6位密码" required />
+          </div>
+          <div className="relative">
+            <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+            <Input value={form.companyName} onChange={e => setForm({...form, companyName: e.target.value})} className="pl-10" placeholder="公司名（可选）" />
+          </div>
+          <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
+            {loading ? "注册中..." : "创建账户"}
+          </Button>
         </form>
-        <p className="text-center text-sm text-gray-500">已有账户？<Link href="/auth/login" className="text-blue-600 hover:underline">登录</Link></p>
+
+        <p className="text-center text-sm text-[var(--color-muted-fg)]">
+          已有账户？{" "}
+          <Link href="/auth/login" className="text-[var(--color-accent)] hover:underline font-medium">登录</Link>
+        </p>
       </div>
     </div>
   );

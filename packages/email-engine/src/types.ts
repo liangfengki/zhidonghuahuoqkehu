@@ -1,9 +1,20 @@
 export interface ChannelInfo {
-  provider: 'brevo' | 'resend' | 'mailgun' | 'mailjet';
+  provider: 'brevo' | 'resend' | 'mailgun' | 'mailjet' | 'smtp';
   apiKey: string;
+  senderEmail?: string;
+  senderName?: string;
   dailyLimit: number;
   dailySent: number;
   status: 'active' | 'paused' | 'exhausted';
+  smtpConfig?: SmtpConfig;
+}
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  secure: boolean;
 }
 
 export interface SendParams {

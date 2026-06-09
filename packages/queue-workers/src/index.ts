@@ -7,9 +7,9 @@ const connection = { url: redisUrl };
 // ---- Collect Leads Worker ----
 const collectWorker = new Worker('collect-leads', async (job) => {
   const { tenantId, industry, country, keywords, sources, companyDomains } = job.data;
-  console.log(`🔍 [Collect] ${industry}/${country}, keywords: ${keywords?.join(',')}, domains: ${companyDomains?.join(',')}`);
+  const keywordStr = Array.isArray(keywords) ? keywords.join(' ') : (keywords || '');
+  console.log(`🔍 [Collect] ${industry}/${country}, keywords: ${keywordStr}, domains: ${companyDomains?.join(',')}`);
 
-  // Dynamically import to avoid startup deps
   const { LeadCollectionService } = await import('@b2b-lead-gen/data-sources');
   const { PrismaClient } = await import('@prisma/client');
 
@@ -17,18 +17,54 @@ const collectWorker = new Worker('collect-leads', async (job) => {
   try {
     const service = new LeadCollectionService();
     const domains = companyDomains || [];
-    if (domains.length === 0) {
-      console.log('⚠️ [Collect] No domains provided, skipping');
-      return;
-    }
 
     // Get API keys from tenant settings
     const channels = await prisma.sendChannel.findMany({ where: { tenantId, status: 'active' } });
     const apolloKey = channels.find((c: any) => c.provider === 'apollo')?.apiKey || '';
     const hunterKey = channels.find((c: any) => c.provider === 'hunter')?.apiKey || '';
+    const config = { apolloApiKey: apolloKey, hunterApiKey: hunterKey };
+
+    // Mode 1: Search by keywords when no domains provided
+    if (domains.length === 0 && keywordStr) {
+      console.log(`🔍 [Collect] Searching by keywords: "${keywordStr}"`);
+      const contacts = await service.collectByKeywords(keywordStr, config, { industry, country });
+
+      for (const c of contacts) {
+        if (!c.email) continue;
+        const domain = c.email.split('@')[1] || 'unknown';
+        try {
+          const company = await prisma.company.upsert({
+            where: { tenantId_domain: { tenantId, domain } },
+            create: { tenantId, name: domain, domain, industry, country, score: 50 },
+            update: {},
+          });
+          await prisma.contact.upsert({
+            where: { tenantId_email: { tenantId, email: c.email } },
+            create: {
+              tenantId, companyId: company.id,
+              firstName: c.firstName, lastName: c.lastName, email: c.email,
+              position: c.position, linkedinUrl: c.linkedinUrl,
+              source: c.source, score: Math.round(c.confidence * 100),
+              patternMatched: false,
+            },
+            update: { source: c.source, score: Math.round(c.confidence * 100) },
+          });
+        } catch (e: any) {
+          console.error(`Failed to upsert contact ${c.email}:`, e.message);
+        }
+      }
+      console.log(`📊 [Collect] Keyword search: ${contacts.length} contacts found`);
+      return;
+    }
+
+    // Mode 2: Search by specific domains
+    if (domains.length === 0) {
+      console.log('⚠️ [Collect] No domains or keywords provided, skipping');
+      return;
+    }
 
     for (const domain of domains) {
-      const result = await service.collectFromDomain(domain, { apolloApiKey: apolloKey, hunterApiKey: hunterKey });
+      const result = await service.collectFromDomain(domain, config);
 
       // Upsert company
       const company = await prisma.company.upsert({
@@ -103,33 +139,78 @@ const verifyWorker = new Worker('verify-email', async (job) => {
 
 // ---- Send Email Worker ----
 const sendWorker = new Worker('send-email', async (job) => {
-  const { tenantId, campaignContactId, toEmail, toName, subject, body, channel } = job.data;
-  console.log(`📤 [Send] ${toEmail} via ${channel}`);
+  const { tenantId, campaignContactId, toEmail, toName, subject, body } = job.data;
+  console.log(`📤 [Send] ${toEmail}`);
 
   const { PrismaClient } = await import('@prisma/client');
+  const { EmailSender, ChannelRouter, EmailTracker, TemplateRenderer } = await import('@b2b-lead-gen/email-engine');
+
   const prisma = new PrismaClient();
   try {
-    const sendChannel = await prisma.sendChannel.findUnique({
-      where: { tenantId_provider: { tenantId, provider: channel } },
+    // Get all active channels for this tenant
+    const channels = await prisma.sendChannel.findMany({
+      where: { tenantId, status: 'active' },
     });
-    if (!sendChannel || sendChannel.status !== 'active') throw new Error(`Channel ${channel} not available`);
+    if (channels.length === 0) throw new Error('No active send channels');
+
+    // Use ChannelRouter to select the best provider for this recipient
+    const router = new ChannelRouter();
+    const channelInfo = channels.map(c => ({
+      provider: c.provider as any,
+      apiKey: c.apiKey,
+      dailyLimit: c.dailyLimit,
+      dailySent: c.dailySent,
+      status: c.status as any,
+    }));
+    const selectedChannel = router.selectChannel(toEmail, channelInfo);
+    if (!selectedChannel) throw new Error('No channel with remaining quota');
+
+    const sendChannel = channels.find(c => c.provider === selectedChannel.provider)!;
 
     const queueRecord = await prisma.sendQueue.create({
-      data: { tenantId, campaignContactId, channel, toEmail, subject, body, status: 'sending' },
+      data: { tenantId, campaignContactId, channel: selectedChannel.provider, toEmail, subject, body, status: 'sending' },
     });
 
-    // Simulate send (in production, use the EmailSender from email-engine)
-    await new Promise(r => setTimeout(r, 500));
-    const messageId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Inject tracking pixel and link tracking
+    const tracker = new EmailTracker();
+    const trackingId = tracker.generateTrackingId(campaignContactId);
+    const trackedBody = tracker.injectTracking(body, trackingId);
+
+    // Send via real email provider
+    const sender = new EmailSender();
+    const result = await sender.send(
+      {
+        to: toEmail,
+        toName,
+        subject,
+        htmlBody: trackedBody,
+        trackingEnabled: true,
+        campaignContactId,
+        tenantId,
+      },
+      selectedChannel,
+    );
+
+    if (!result.success) {
+      await prisma.sendQueue.update({
+        where: { id: queueRecord.id },
+        data: { status: 'failed', errorMessage: result.error },
+      });
+      await prisma.campaignContact.update({
+        where: { id: campaignContactId },
+        data: { status: 'failed' },
+      });
+      throw new Error(result.error || 'Send failed');
+    }
 
     await prisma.sendQueue.update({
       where: { id: queueRecord.id },
-      data: { status: 'sent', messageId, sentAt: new Date() },
+      data: { status: 'sent', messageId: result.messageId, sentAt: result.sentAt },
     });
 
     await prisma.campaignContact.update({
       where: { id: campaignContactId },
-      data: { status: 'sent', sentAt: new Date() },
+      data: { status: 'sent', sentAt: result.sentAt },
     });
 
     await prisma.sendChannel.update({
@@ -137,7 +218,7 @@ const sendWorker = new Worker('send-email', async (job) => {
       data: { dailySent: sendChannel.dailySent + 1 },
     });
 
-    console.log(`✅ [Send] ${toEmail} sent (msgId: ${messageId})`);
+    console.log(`✅ [Send] ${toEmail} sent via ${result.channel} (msgId: ${result.messageId})`);
   } catch (err: any) {
     console.error(`❌ [Send] ${toEmail} failed:`, err.message);
     throw err;
@@ -289,9 +370,275 @@ const statsWorker = new Worker('stats-daily', async (job) => {
   }
 }, { connection, concurrency: 1 });
 
+// ---- AI Collect Worker ----
+const aiCollectWorker = new Worker('ai-collect', async (job) => {
+  const { tenantId } = job.data;
+  console.log(`🤖 [AI-Collect] Starting for tenant ${tenantId}`);
+
+  const { PrismaClient } = await import('@prisma/client');
+  const { LeadCollectionService } = await import('@b2b-lead-gen/data-sources');
+  const { Queue } = await import('bullmq');
+
+  const prisma = new PrismaClient();
+  try {
+    const aiConfig = await prisma.aiConfig.findUnique({ where: { tenantId } });
+    if (!aiConfig) { console.log('⏭️ [AI-Collect] No AI config, skipping'); return; }
+
+    const channels = await prisma.sendChannel.findMany({ where: { tenantId, status: 'active' } });
+    const apolloKey = channels.find((c: any) => c.provider === 'apollo')?.apiKey || '';
+    const hunterKey = channels.find((c: any) => c.provider === 'hunter')?.apiKey || '';
+    const config = { apolloApiKey: apolloKey, hunterApiKey: hunterKey };
+
+    const service = new LeadCollectionService();
+    const keywords = aiConfig.extractedKeywords || 'buyer importer';
+    const industry = aiConfig.extractedIndustry || '';
+    const country = aiConfig.extractedCountry || '';
+
+    console.log(`🤖 [AI-Collect] Searching: keywords="${keywords}", industry="${industry}", country="${country}"`);
+    const contacts = await service.collectByKeywords(keywords, config, { industry, country });
+
+    let saved = 0;
+    for (const c of contacts) {
+      if (!c.email) continue;
+      // Skip generic/role-based emails
+      const localPart = c.email.split('@')[0].toLowerCase();
+      const skipPrefixes = ['noreply', 'no-reply', 'postmaster', 'webmaster', 'abuse', 'security', 'mailer-daemon', '2d8d7644'];
+      if (skipPrefixes.some(p => localPart.startsWith(p))) continue;
+
+      const domain = c.email.split('@')[1] || 'unknown';
+      try {
+        const company = await prisma.company.upsert({
+          where: { tenantId_domain: { tenantId, domain } },
+          create: { tenantId, name: domain, domain, industry, country, score: 50 },
+          update: {},
+        });
+        await prisma.contact.upsert({
+          where: { tenantId_email: { tenantId, email: c.email } },
+          create: {
+            tenantId, companyId: company.id,
+            firstName: c.firstName, lastName: c.lastName, email: c.email,
+            position: c.position, linkedinUrl: c.linkedinUrl,
+            source: 'ai_collect', score: Math.round(c.confidence * 100),
+            verificationStatus: 'valid', // Mark as valid since found on real company website
+            patternMatched: false,
+          },
+          update: { score: Math.round(c.confidence * 100), verificationStatus: 'valid' },
+        });
+        saved++;
+      } catch {}
+    }
+
+    await prisma.aiConfig.update({ where: { tenantId }, data: { lastCollectAt: new Date() } });
+    console.log(`✅ [AI-Collect] Done: ${saved} contacts saved from ${contacts.length} found`);
+
+    // Chain: trigger ai-write
+    const aiWriteQueue = new Queue('ai-write', { connection });
+    await aiWriteQueue.add('ai-write', { tenantId }, { removeOnComplete: 50 });
+    console.log(`🔗 [AI-Collect] Chained ai-write job`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}, { connection, concurrency: 1 });
+
+// ---- AI Write Worker ----
+const aiWriteWorker = new Worker('ai-write', async (job) => {
+  const { tenantId } = job.data;
+  console.log(`🤖 [AI-Write] Starting for tenant ${tenantId}`);
+
+  const { PrismaClient } = await import('@prisma/client');
+  const { EmailWriter, LeadAnalyzer } = await import('@b2b-lead-gen/ai-engine');
+  const { Queue } = await import('bullmq');
+
+  const prisma = new PrismaClient();
+  try {
+    const aiConfig = await prisma.aiConfig.findUnique({ where: { tenantId } });
+    if (!aiConfig?.apiKey) { console.log('⏭️ [AI-Write] No API key, skipping'); return; }
+
+    const writer = new EmailWriter({ apiUrl: aiConfig.apiUrl, apiKey: aiConfig.apiKey, model: aiConfig.model });
+    const analyzer = new LeadAnalyzer({ apiUrl: aiConfig.apiUrl, apiKey: aiConfig.apiKey, model: aiConfig.model });
+
+    // Get verified contacts without AI drafts
+    const existingDraftContactIds = (await prisma.aiEmailDraft.findMany({
+      where: { tenantId },
+      select: { contactId: true },
+    })).map(d => d.contactId).filter(Boolean);
+
+    const contacts = await prisma.contact.findMany({
+      where: {
+        tenantId,
+        verificationStatus: 'valid',
+        status: { not: 'deleted' },
+        id: { notIn: existingDraftContactIds as string[] },
+      },
+      include: { company: true },
+      take: 20,
+    });
+
+    if (contacts.length === 0) { console.log('⏭️ [AI-Write] No new contacts to write for'); return; }
+
+    let generated = 0;
+    let skipped = 0;
+    for (const contact of contacts) {
+      try {
+        // Analyze lead quality first
+        const analysis = await analyzer.analyzeLead({
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          email: contact.email,
+          position: contact.position || undefined,
+          companyName: (contact.company as any)?.name || undefined,
+          industry: (contact.company as any)?.industry || undefined,
+          country: (contact.company as any)?.country || undefined,
+        });
+
+        // Update contact score based on AI analysis
+        if (analysis.score) {
+          await prisma.contact.update({
+            where: { id: contact.id },
+            data: { score: analysis.score },
+          });
+        }
+
+        // Skip low-quality leads (score < 40)
+        if (analysis.score && analysis.score < 40) {
+          console.log(`⏭️ [AI-Write] Skipping low-quality lead ${contact.email} (score: ${analysis.score})`);
+          skipped++;
+          continue;
+        }
+
+        const email = await writer.generateEmail({
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          email: contact.email,
+          position: contact.position || undefined,
+          companyName: (contact.company as any)?.name || undefined,
+          industry: (contact.company as any)?.industry || undefined,
+          country: (contact.company as any)?.country || undefined,
+        }, aiConfig.productDescription || undefined);
+
+        await prisma.aiEmailDraft.create({
+          data: {
+            tenantId,
+            contactId: contact.id,
+            subject: email.subject,
+            body: email.body,
+            status: 'draft', // Changed from 'approved' to 'draft' for review
+          },
+        });
+        generated++;
+        await new Promise(r => setTimeout(r, 1500)); // Rate limit
+      } catch (e: any) {
+        console.error(`❌ [AI-Write] Failed for ${contact.email}:`, e.message);
+      }
+    }
+
+    await prisma.aiConfig.update({ where: { tenantId }, data: { lastWriteAt: new Date() } });
+    console.log(`✅ [AI-Write] Done: ${generated} drafts generated, ${skipped} skipped for ${contacts.length} contacts`);
+
+    // Chain: trigger ai-send
+    const aiSendQueue = new Queue('ai-send', { connection });
+    await aiSendQueue.add('ai-send', { tenantId }, { removeOnComplete: 50 });
+    console.log(`🔗 [AI-Write] Chained ai-send job`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}, { connection, concurrency: 1 });
+
+// ---- AI Send Worker ----
+const aiSendWorker = new Worker('ai-send', async (job) => {
+  const { tenantId } = job.data;
+  console.log(`🤖 [AI-Send] Starting for tenant ${tenantId}`);
+
+  const { PrismaClient } = await import('@prisma/client');
+  const { EmailSender, ChannelRouter, EmailTracker } = await import('@b2b-lead-gen/email-engine');
+
+  const prisma = new PrismaClient();
+  try {
+    const aiConfig = await prisma.aiConfig.findUnique({ where: { tenantId } });
+    if (!aiConfig) { console.log('⏭️ [AI-Send] No AI config, skipping'); return; }
+
+    // Get approved drafts
+    const drafts = await prisma.aiEmailDraft.findMany({
+      where: { tenantId, status: 'approved' },
+      take: 10,
+    });
+
+    if (drafts.length === 0) { console.log('⏭️ [AI-Send] No approved drafts to send'); return; }
+
+    // Get channels
+    const channels = await prisma.sendChannel.findMany({ where: { tenantId, status: 'active' } });
+    if (channels.length === 0) { console.log('❌ [AI-Send] No active send channels'); return; }
+
+    const router = new ChannelRouter();
+    const sender = new EmailSender();
+    const tracker = new EmailTracker();
+
+    let sent = 0;
+    for (const draft of drafts) {
+      try {
+        const contact = draft.contactId ? await prisma.contact.findUnique({
+          where: { id: draft.contactId },
+          include: { company: true },
+        }) : null;
+
+        if (!contact?.email) continue;
+
+        const channelInfo = channels.map(c => ({
+          provider: c.provider as any, apiKey: c.apiKey,
+          dailyLimit: c.dailyLimit, dailySent: c.dailySent, status: c.status as any,
+        }));
+        const selectedChannel = router.selectChannel(contact.email, channelInfo);
+        if (!selectedChannel) { console.log('⏭️ [AI-Send] No channel with quota'); break; }
+
+        const sendChannel = channels.find(c => c.provider === selectedChannel.provider)!;
+        const trackingId = tracker.generateTrackingId(draft.id);
+        const trackedBody = tracker.injectTracking(draft.body, trackingId);
+
+        const result = await sender.send({
+          to: contact.email,
+          toName: `${contact.firstName} ${contact.lastName}`,
+          subject: draft.subject,
+          htmlBody: trackedBody,
+          trackingEnabled: true,
+          campaignContactId: draft.id,
+          tenantId,
+        }, selectedChannel);
+
+        if (result.success) {
+          await prisma.aiEmailDraft.update({
+            where: { id: draft.id },
+            data: { status: 'sent', sentAt: new Date() },
+          });
+          await prisma.sendChannel.update({
+            where: { id: sendChannel.id },
+            data: { dailySent: sendChannel.dailySent + 1 },
+          });
+          sent++;
+        } else {
+          console.error(`❌ [AI-Send] Failed for ${contact.email}: ${result.error}`);
+        }
+
+        // Random delay between sends (30s to 3min)
+        const delay = 30000 + Math.random() * 150000;
+        await new Promise(r => setTimeout(r, delay));
+      } catch (e: any) {
+        console.error(`❌ [AI-Send] Error:`, e.message);
+      }
+    }
+
+    await prisma.aiConfig.update({ where: { tenantId }, data: { lastSendAt: new Date() } });
+    console.log(`✅ [AI-Send] Done: ${sent}/${drafts.length} sent`);
+  } finally {
+    await prisma.$disconnect();
+  }
+}, { connection, concurrency: 1 });
+
 console.log('🚀 All workers started');
 console.log('   - collect-leads: 2 concurrency');
 console.log('   - verify-email: 5 concurrency');
 console.log('   - send-email: 10 concurrency');
 console.log('   - inbox-poll: 3 concurrency');
 console.log('   - stats-daily: 1 concurrency (runs at 1 AM daily)');
+console.log('   - ai-collect: 1 concurrency (AI lead collection)');
+console.log('   - ai-write: 1 concurrency (AI email writing)');
+console.log('   - ai-send: 1 concurrency (AI email sending)');

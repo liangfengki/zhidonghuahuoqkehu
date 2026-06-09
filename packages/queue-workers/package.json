@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@b2b-lead-gen/ai-engine": "workspace:*",
     "@b2b-lead-gen/data-sources": "workspace:*",
     "@b2b-lead-gen/email-engine": "workspace:*",
     "@b2b-lead-gen/shared": "workspace:*",

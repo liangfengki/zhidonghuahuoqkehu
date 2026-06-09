@@ -1,5 +1,6 @@
 import type { SendParams, SendResult, ChannelInfo } from './types';
 import { ChannelRouter } from './channel-router';
+import nodemailer from 'nodemailer';
 
 export class EmailSender {
   private router = new ChannelRouter();
@@ -14,6 +15,8 @@ export class EmailSender {
         return this.sendViaMailgun(params, channel);
       case 'mailjet':
         return this.sendViaMailjet(params, channel);
+      case 'smtp':
+        return this.sendViaSmtp(params, channel);
       default:
         return { success: false, channel: channel.provider, error: 'Unknown provider', sentAt: new Date() };
     }
@@ -21,6 +24,8 @@ export class EmailSender {
 
   private async sendViaBrevo(params: SendParams, channel: ChannelInfo): Promise<SendResult> {
     try {
+      const senderEmail = channel.senderEmail || 'noreply@example.com';
+      const senderName = channel.senderName || 'Sales Team';
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -28,7 +33,7 @@ export class EmailSender {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          sender: { name: 'Sales Team', email: 'noreply@sales.example.com' },
+          sender: { name: senderName, email: senderEmail },
           to: [{ email: params.to, name: params.toName }],
           subject: params.subject,
           htmlContent: params.htmlBody,
@@ -60,6 +65,8 @@ export class EmailSender {
 
   private async sendViaResend(params: SendParams, channel: ChannelInfo): Promise<SendResult> {
     try {
+      const senderEmail = channel.senderEmail || 'noreply@example.com';
+      const senderName = channel.senderName || 'Sales Team';
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -67,7 +74,7 @@ export class EmailSender {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Sales Team <noreply@sales.example.com>',
+          from: `${senderName} <${senderEmail}>`,
           to: [`${params.toName} <${params.to}>`],
           subject: params.subject,
           html: params.htmlBody,
@@ -101,9 +108,11 @@ export class EmailSender {
     try {
       const domain = channel.apiKey.includes(':') ? channel.apiKey.split(':')[0] : 'mg.example.com';
       const apiKey = channel.apiKey.includes(':') ? channel.apiKey.split(':')[1] : channel.apiKey;
+      const senderEmail = channel.senderEmail || `noreply@${domain}`;
+      const senderName = channel.senderName || 'Sales Team';
 
       const form = new URLSearchParams();
-      form.append('from', 'Sales Team <noreply@sales.example.com>');
+      form.append('from', `${senderName} <${senderEmail}>`);
       form.append('to', `${params.toName} <${params.to}>`);
       form.append('subject', params.subject);
       form.append('html', params.htmlBody);
@@ -144,6 +153,8 @@ export class EmailSender {
       const [apiKey, secretKey] = channel.apiKey.includes(':')
         ? channel.apiKey.split(':')
         : [channel.apiKey, ''];
+      const senderEmail = channel.senderEmail || 'noreply@example.com';
+      const senderName = channel.senderName || 'Sales Team';
 
       const res = await fetch('https://api.mailjet.com/v3.1/send', {
         method: 'POST',
@@ -153,7 +164,7 @@ export class EmailSender {
         },
         body: JSON.stringify({
           Messages: [{
-            From: { Email: 'noreply@sales.example.com', Name: 'Sales Team' },
+            From: { Email: senderEmail, Name: senderName },
             To: [{ Email: params.to, Name: params.toName }],
             Subject: params.subject,
             HTMLPart: params.htmlBody,
@@ -183,5 +194,47 @@ export class EmailSender {
 
   selectChannelForSend(email: string, channels: ChannelInfo[]): ChannelInfo | null {
     return this.router.selectChannel(email, channels);
+  }
+
+  async sendViaSmtp(params: SendParams, channel: ChannelInfo): Promise<SendResult> {
+    try {
+      const smtpConfig = channel.smtpConfig;
+      if (!smtpConfig) {
+        return { success: false, channel: 'smtp', error: 'SMTP config not provided', sentAt: new Date() };
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: smtpConfig.host,
+        port: smtpConfig.port,
+        secure: smtpConfig.secure,
+        auth: {
+          user: smtpConfig.user,
+          pass: smtpConfig.password,
+        },
+      });
+
+      const senderEmail = channel.senderEmail || smtpConfig.user;
+      const senderName = channel.senderName || 'Sales Team';
+
+      const info = await transporter.sendMail({
+        from: `"${senderName}" <${senderEmail}>`,
+        to: params.toName ? `"${params.toName}" <${params.to}>` : params.to,
+        subject: params.subject,
+        html: params.htmlBody,
+        headers: {
+          'X-Campaign-Contact-Id': params.campaignContactId,
+          'X-Tenant-Id': params.tenantId,
+        },
+      });
+
+      return {
+        success: true,
+        messageId: info.messageId,
+        channel: 'smtp',
+        sentAt: new Date(),
+      };
+    } catch (err: any) {
+      return { success: false, channel: 'smtp', error: err.message, sentAt: new Date() };
+    }
   }
 }

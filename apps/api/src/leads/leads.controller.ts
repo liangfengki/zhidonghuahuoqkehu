@@ -12,7 +12,7 @@ import { CollectDto } from './dto/collect.dto';
 import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
 
-@Controller('api/leads')
+@Controller('leads')
 @UseGuards(JwtAuthGuard)
 export class LeadsController {
   constructor(private leadsService: LeadsService) {}

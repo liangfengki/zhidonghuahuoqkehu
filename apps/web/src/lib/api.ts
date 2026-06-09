@@ -44,7 +44,17 @@ async function apiFetchRaw<T = unknown>(path: string, options: FetchOptions = {}
 // Auto-unwrap {success: true, data: T} responses
 async function apiFetch<T = unknown>(path: string, options: FetchOptions = {}): Promise<T> {
   const res: any = await apiFetchRaw(path, options);
-  return res.success !== undefined ? res : res;
+  if (res && typeof res === 'object' && 'success' in res) {
+    if (!res.success) {
+      throw new Error(res.message || 'Request failed');
+    }
+    // Preserve meta if present (paginated responses)
+    if (res.meta) {
+      return { data: res.data, meta: res.meta } as T;
+    }
+    return res.data !== undefined ? res.data as T : res as T;
+  }
+  return res;
 }
 
 export function apiGet<T = unknown>(path: string, options?: FetchOptions): Promise<T> {

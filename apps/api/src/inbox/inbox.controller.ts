@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentTenant } from '../common/decorators/tenant.decorator';
 import { InboxService } from './inbox.service';
 
-@Controller('api/inbox')
+@Controller('inbox')
 @UseGuards(JwtAuthGuard)
 export class InboxController {
   constructor(private inboxService: InboxService) {}

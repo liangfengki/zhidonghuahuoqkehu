@@ -6,18 +6,27 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variants: Record<string, string> = {
-  default: "bg-[var(--primary)] text-[var(--primary-foreground)]",
-  secondary: "bg-[var(--muted)] text-[var(--muted-foreground)]",
-  destructive: "bg-[var(--destructive)] text-[var(--destructive-foreground)]",
-  outline: "border border-[var(--border)]",
-  success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-  warning: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+  default:
+    "bg-[var(--color-accent)]/15 text-[var(--color-accent)] border border-[var(--color-accent)]/30",
+  secondary: "bg-[var(--color-subtle)] text-[var(--color-muted-fg)] border border-[var(--color-glass-border)]",
+  destructive:
+    "bg-[var(--color-danger)]/15 text-[var(--color-danger)] border border-[var(--color-danger)]/30",
+  outline:
+    "border border-[var(--color-glass-border)] text-[var(--color-fg)] bg-transparent",
+  success:
+    "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
+  warning:
+    "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30",
 };
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
   return (
     <div
-      className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors", variants[variant], className)}
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
+        variants[variant],
+        className,
+      )}
       {...props}
     />
   );

@@ -4,7 +4,7 @@ import { CurrentTenant } from '../common/decorators/tenant.decorator';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 
-@Controller('api/campaigns')
+@Controller('campaigns')
 @UseGuards(JwtAuthGuard)
 export class CampaignsController {
   constructor(private campaignsService: CampaignsService) {}

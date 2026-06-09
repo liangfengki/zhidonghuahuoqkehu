@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.module';
+import { EmailSender } from '@b2b-lead-gen/email-engine';
 
 @Injectable()
 export class InboxService {
+  private emailSender = new EmailSender();
+  
   constructor(private prisma: PrismaService) {}
 
   async listThreads(tenantId: string, filters: { status?: string; isHotLead?: boolean; assignedUserId?: string; page?: number; pageSize?: number }) {
@@ -46,14 +49,59 @@ export class InboxService {
   }
 
   async reply(tenantId: string, threadId: string, body: string) {
-    const thread = await this.prisma.inboxThread.findFirst({ where: { id: threadId, tenantId } });
+    const thread = await this.prisma.inboxThread.findFirst({
+      where: { id: threadId, tenantId },
+      include: { contact: true, campaign: true },
+    });
     if (!thread) throw new NotFoundException('线程不存在');
+    if (!thread.contact) throw new BadRequestException('该线程没有关联联系人');
 
+    // 获取可用的发送通道
+    const channel = await this.prisma.sendChannel.findFirst({
+      where: { tenantId, status: 'active' },
+    });
+    if (!channel) throw new BadRequestException('没有可用的发送通道，请先配置邮件发送渠道');
+
+    // 获取发件人地址
+    const senderEmail = channel.senderEmail || 'noreply@example.com';
+    const senderName = channel.senderName || 'Sales Team';
+
+    // 发送邮件
+    const sendResult = await this.emailSender.send(
+      {
+        to: thread.contact.email,
+        toName: `${thread.contact.firstName} ${thread.contact.lastName}`,
+        subject: thread.subject.startsWith('Re:') ? thread.subject : `Re: ${thread.subject}`,
+        htmlBody: body,
+        trackingEnabled: false,
+        campaignContactId: '',
+        tenantId,
+      },
+      {
+        provider: channel.provider as any,
+        apiKey: channel.apiKey,
+        senderEmail,
+        senderName,
+        dailyLimit: channel.dailyLimit,
+        dailySent: channel.dailySent,
+        status: channel.status as any,
+      }
+    );
+
+    if (!sendResult.success) {
+      throw new BadRequestException(`邮件发送失败: ${sendResult.error}`);
+    }
+
+    // 创建数据库记录
     return this.prisma.inboxMessage.create({
       data: {
-        threadId, direction: 'outbound',
-        fromEmail: 'support@example.com', toEmail: thread.contactId ? 'contact@example.com' : 'unknown',
-        body, headers: {}, receivedAt: new Date(),
+        threadId,
+        direction: 'outbound',
+        fromEmail: senderEmail,
+        toEmail: thread.contact.email,
+        body,
+        headers: {},
+        receivedAt: new Date(),
       },
     });
   }

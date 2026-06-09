@@ -75,17 +75,24 @@ export class CampaignsService {
         data: { campaignId: id, contactId: contact.id, status: 'pending' },
       });
 
-      const subject = campaign.template.subject
-        .replace('{{firstName}}', contact.firstName)
-        .replace('{{companyName}}', (contact.company as any)?.name || '');
-      const body = campaign.template.body
-        .replace('{{firstName}}', contact.firstName)
-        .replace('{{companyName}}', (contact.company as any)?.name || '');
+      const companyName = (contact.company as any)?.name || '';
+      const vars: Record<string, string> = {
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        fullName: `${contact.firstName} ${contact.lastName}`,
+        email: contact.email,
+        companyName,
+        position: contact.position || '采购经理',
+      };
+      const render = (t: string) => t.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? `{{${k}}}`);
+      const subject = render(campaign.template.subject);
+      const body = render(campaign.template.body);
 
+      // channel is determined dynamically by the worker via ChannelRouter
       await this.queueService.addSendEmailJob({
         tenantId, campaignContactId: cc.id,
         toEmail: contact.email, toName: `${contact.firstName} ${contact.lastName}`,
-        subject, body, channel: 'brevo',
+        subject, body, channel: 'auto',
       });
     }
 

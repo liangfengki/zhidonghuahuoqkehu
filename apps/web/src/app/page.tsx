@@ -9,9 +9,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!auth.loading) {
-      router.replace(auth.user ? "/leads" : "/auth/login");
+      router.replace(auth.user ? "/dashboard" : "/auth/login");
     }
   }, [auth.loading, auth.user, router]);
 
-  return <div className="min-h-screen flex items-center justify-center"><p>加载中...</p></div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="animate-pulse text-[var(--color-muted-fg)] text-sm">加载中...</div>
+    </div>
+  );
 }

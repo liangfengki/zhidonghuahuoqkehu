@@ -5,7 +5,7 @@ import { CurrentTenant } from '../common/decorators/tenant.decorator';
 import { ReportsService } from './reports.service';
 import { stringify } from 'csv-stringify/sync';
 
-@Controller('api/reports')
+@Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}

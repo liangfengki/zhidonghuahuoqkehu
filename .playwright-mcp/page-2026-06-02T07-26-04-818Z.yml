@@ -1,0 +1,800 @@
+- generic [active] [ref=e1]:
+  - img
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - button [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+    - generic [ref=e47]:
+      - generic:
+        - img
+      - generic [ref=e48]:
+        - generic [ref=e52]:
+          - heading "B2B Lead Gen API 1.0 OAS 3.0" [level=1] [ref=e54]:
+            - text: B2B Lead Gen API
+            - generic [ref=e55]:
+              - generic [ref=e57]: "1.0"
+              - generic [ref=e59]: OAS 3.0
+          - paragraph [ref=e62]: 企业全球获客平台 API
+        - button "Authorize" [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]: Authorize
+          - img [ref=e68]
+        - generic [ref=e72]:
+          - generic [ref=e74]:
+            - heading "Auth Collapse operation" [level=3] [ref=e75] [cursor=pointer]:
+              - link "Auth" [ref=e76]:
+                - /url: "#/Auth"
+              - button "Collapse operation" [expanded] [ref=e77]:
+                - img [ref=e78]
+            - generic [ref=e81]:
+              - generic [ref=e84] [cursor=pointer]:
+                - button "POST /api/auth/register" [ref=e85]:
+                  - generic [ref=e86]: POST
+                  - link "/api/auth/register" [ref=e89]:
+                    - /url: "#/Auth/AuthController_register"
+                    - generic [ref=e90]:
+                      - text: /api
+                      - text: /auth
+                      - text: /register
+                - generic "Copy to clipboard"
+                - button "post /api/auth/register" [ref=e93]:
+                  - img [ref=e94]
+              - generic [ref=e98] [cursor=pointer]:
+                - button "POST /api/auth/login" [ref=e99]:
+                  - generic [ref=e100]: POST
+                  - link "/api/auth/login" [ref=e103]:
+                    - /url: "#/Auth/AuthController_login"
+                    - generic [ref=e104]:
+                      - text: /api
+                      - text: /auth
+                      - text: /login
+                - generic "Copy to clipboard"
+                - button "post /api/auth/login" [ref=e107]:
+                  - img [ref=e108]
+              - generic [ref=e112] [cursor=pointer]:
+                - button "GET /api/auth/me" [ref=e113]:
+                  - generic [ref=e114]: GET
+                  - link "/api/auth/me" [ref=e117]:
+                    - /url: "#/Auth/AuthController_getMe"
+                    - generic [ref=e118]:
+                      - text: /api
+                      - text: /auth
+                      - text: /me
+                - generic "Copy to clipboard"
+                - button "get /api/auth/me" [ref=e121]:
+                  - img [ref=e122]
+              - generic [ref=e126] [cursor=pointer]:
+                - button "POST /api/auth/refresh" [ref=e127]:
+                  - generic [ref=e128]: POST
+                  - link "/api/auth/refresh" [ref=e131]:
+                    - /url: "#/Auth/AuthController_refresh"
+                    - generic [ref=e132]:
+                      - text: /api
+                      - text: /auth
+                      - text: /refresh
+                - generic "Copy to clipboard"
+                - button "post /api/auth/refresh" [ref=e135]:
+                  - img [ref=e136]
+          - generic [ref=e139]:
+            - heading "Leads Collapse operation" [level=3] [ref=e140] [cursor=pointer]:
+              - link "Leads" [ref=e141]:
+                - /url: "#/Leads"
+              - button "Collapse operation" [expanded] [ref=e142]:
+                - img [ref=e143]
+            - generic [ref=e146]:
+              - generic [ref=e149] [cursor=pointer]:
+                - button "GET /api/leads" [ref=e150]:
+                  - generic [ref=e151]: GET
+                  - link "/api/leads" [ref=e154]:
+                    - /url: "#/Leads/LeadsController_list"
+                    - generic [ref=e155]:
+                      - text: /api
+                      - text: /leads
+                - generic "Copy to clipboard"
+                - button "get /api/leads" [ref=e158]:
+                  - img [ref=e159]
+              - generic [ref=e163] [cursor=pointer]:
+                - button "POST /api/leads" [ref=e164]:
+                  - generic [ref=e165]: POST
+                  - link "/api/leads" [ref=e168]:
+                    - /url: "#/Leads/LeadsController_create"
+                    - generic [ref=e169]:
+                      - text: /api
+                      - text: /leads
+                - generic "Copy to clipboard"
+                - button "post /api/leads" [ref=e172]:
+                  - img [ref=e173]
+              - generic [ref=e177] [cursor=pointer]:
+                - 'button "GET /api/leads/{id}" [ref=e178]':
+                  - generic [ref=e179]: GET
+                  - 'link "/api/leads/{id}" [ref=e182]':
+                    - /url: "#/Leads/LeadsController_get"
+                    - generic [ref=e183]:
+                      - text: /api
+                      - text: /leads
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "get /api/leads/{id}" [ref=e186]':
+                  - img [ref=e187]
+              - generic [ref=e191] [cursor=pointer]:
+                - 'button "PUT /api/leads/{id}" [ref=e192]':
+                  - generic [ref=e193]: PUT
+                  - 'link "/api/leads/{id}" [ref=e196]':
+                    - /url: "#/Leads/LeadsController_update"
+                    - generic [ref=e197]:
+                      - text: /api
+                      - text: /leads
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/leads/{id}" [ref=e200]':
+                  - img [ref=e201]
+              - generic [ref=e205] [cursor=pointer]:
+                - 'button "DELETE /api/leads/{id}" [ref=e206]':
+                  - generic [ref=e207]: DELETE
+                  - 'link "/api/leads/{id}" [ref=e210]':
+                    - /url: "#/Leads/LeadsController_remove"
+                    - generic [ref=e211]:
+                      - text: /api
+                      - text: /leads
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/leads/{id}" [ref=e214]':
+                  - img [ref=e215]
+              - generic [ref=e219] [cursor=pointer]:
+                - button "POST /api/leads/import" [ref=e220]:
+                  - generic [ref=e221]: POST
+                  - link "/api/leads/import" [ref=e224]:
+                    - /url: "#/Leads/LeadsController_importCSV"
+                    - generic [ref=e225]:
+                      - text: /api
+                      - text: /leads
+                      - text: /import
+                - generic "Copy to clipboard"
+                - button "post /api/leads/import" [ref=e228]:
+                  - img [ref=e229]
+              - generic [ref=e233] [cursor=pointer]:
+                - button "GET /api/leads/export" [ref=e234]:
+                  - generic [ref=e235]: GET
+                  - link "/api/leads/export" [ref=e238]:
+                    - /url: "#/Leads/LeadsController_exportCSV"
+                    - generic [ref=e239]:
+                      - text: /api
+                      - text: /leads
+                      - text: /export
+                - generic "Copy to clipboard"
+                - button "get /api/leads/export" [ref=e242]:
+                  - img [ref=e243]
+              - generic [ref=e247] [cursor=pointer]:
+                - button "POST /api/leads/collect" [ref=e248]:
+                  - generic [ref=e249]: POST
+                  - link "/api/leads/collect" [ref=e252]:
+                    - /url: "#/Leads/LeadsController_collect"
+                    - generic [ref=e253]:
+                      - text: /api
+                      - text: /leads
+                      - text: /collect
+                - generic "Copy to clipboard"
+                - button "post /api/leads/collect" [ref=e256]:
+                  - img [ref=e257]
+              - generic [ref=e261] [cursor=pointer]:
+                - 'button "POST /api/leads/enrich/{id}" [ref=e262]':
+                  - generic [ref=e263]: POST
+                  - 'link "/api/leads/enrich/{id}" [ref=e266]':
+                    - /url: "#/Leads/LeadsController_enrich"
+                    - generic [ref=e267]:
+                      - text: /api
+                      - text: /leads
+                      - text: /enrich
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "post /api/leads/enrich/{id}" [ref=e270]':
+                  - img [ref=e271]
+          - generic [ref=e274]:
+            - heading "Campaigns Collapse operation" [level=3] [ref=e275] [cursor=pointer]:
+              - link "Campaigns" [ref=e276]:
+                - /url: "#/Campaigns"
+              - button "Collapse operation" [expanded] [ref=e277]:
+                - img [ref=e278]
+            - generic [ref=e281]:
+              - generic [ref=e284] [cursor=pointer]:
+                - button "GET /api/campaigns" [ref=e285]:
+                  - generic [ref=e286]: GET
+                  - link "/api/campaigns" [ref=e289]:
+                    - /url: "#/Campaigns/CampaignsController_list"
+                    - generic [ref=e290]:
+                      - text: /api
+                      - text: /campaigns
+                - generic "Copy to clipboard"
+                - button "get /api/campaigns" [ref=e293]:
+                  - img [ref=e294]
+              - generic [ref=e298] [cursor=pointer]:
+                - button "POST /api/campaigns" [ref=e299]:
+                  - generic [ref=e300]: POST
+                  - link "/api/campaigns" [ref=e303]:
+                    - /url: "#/Campaigns/CampaignsController_create"
+                    - generic [ref=e304]:
+                      - text: /api
+                      - text: /campaigns
+                - generic "Copy to clipboard"
+                - button "post /api/campaigns" [ref=e307]:
+                  - img [ref=e308]
+              - generic [ref=e312] [cursor=pointer]:
+                - 'button "PUT /api/campaigns/{id}" [ref=e313]':
+                  - generic [ref=e314]: PUT
+                  - 'link "/api/campaigns/{id}" [ref=e317]':
+                    - /url: "#/Campaigns/CampaignsController_update"
+                    - generic [ref=e318]:
+                      - text: /api
+                      - text: /campaigns
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/campaigns/{id}" [ref=e321]':
+                  - img [ref=e322]
+              - generic [ref=e326] [cursor=pointer]:
+                - 'button "POST /api/campaigns/{id}/start" [ref=e327]':
+                  - generic [ref=e328]: POST
+                  - 'link "/api/campaigns/{id}/start" [ref=e331]':
+                    - /url: "#/Campaigns/CampaignsController_start"
+                    - generic [ref=e332]:
+                      - text: /api
+                      - text: /campaigns
+                      - text: "/{id}"
+                      - text: /start
+                - generic "Copy to clipboard"
+                - 'button "post /api/campaigns/{id}/start" [ref=e335]':
+                  - img [ref=e336]
+              - generic [ref=e340] [cursor=pointer]:
+                - 'button "POST /api/campaigns/{id}/pause" [ref=e341]':
+                  - generic [ref=e342]: POST
+                  - 'link "/api/campaigns/{id}/pause" [ref=e345]':
+                    - /url: "#/Campaigns/CampaignsController_pause"
+                    - generic [ref=e346]:
+                      - text: /api
+                      - text: /campaigns
+                      - text: "/{id}"
+                      - text: /pause
+                - generic "Copy to clipboard"
+                - 'button "post /api/campaigns/{id}/pause" [ref=e349]':
+                  - img [ref=e350]
+              - generic [ref=e354] [cursor=pointer]:
+                - 'button "GET /api/campaigns/{id}/stats" [ref=e355]':
+                  - generic [ref=e356]: GET
+                  - 'link "/api/campaigns/{id}/stats" [ref=e359]':
+                    - /url: "#/Campaigns/CampaignsController_stats"
+                    - generic [ref=e360]:
+                      - text: /api
+                      - text: /campaigns
+                      - text: "/{id}"
+                      - text: /stats
+                - generic "Copy to clipboard"
+                - 'button "get /api/campaigns/{id}/stats" [ref=e363]':
+                  - img [ref=e364]
+          - generic [ref=e367]:
+            - heading "Templates Collapse operation" [level=3] [ref=e368] [cursor=pointer]:
+              - link "Templates" [ref=e369]:
+                - /url: "#/Templates"
+              - button "Collapse operation" [expanded] [ref=e370]:
+                - img [ref=e371]
+            - generic [ref=e374]:
+              - generic [ref=e377] [cursor=pointer]:
+                - button "GET /api/templates" [ref=e378]:
+                  - generic [ref=e379]: GET
+                  - link "/api/templates" [ref=e382]:
+                    - /url: "#/Templates/TemplatesController_list"
+                    - generic [ref=e383]:
+                      - text: /api
+                      - text: /templates
+                - generic "Copy to clipboard"
+                - button "get /api/templates" [ref=e386]:
+                  - img [ref=e387]
+              - generic [ref=e391] [cursor=pointer]:
+                - button "POST /api/templates" [ref=e392]:
+                  - generic [ref=e393]: POST
+                  - link "/api/templates" [ref=e396]:
+                    - /url: "#/Templates/TemplatesController_create"
+                    - generic [ref=e397]:
+                      - text: /api
+                      - text: /templates
+                - generic "Copy to clipboard"
+                - button "post /api/templates" [ref=e400]:
+                  - img [ref=e401]
+              - generic [ref=e405] [cursor=pointer]:
+                - 'button "PUT /api/templates/{id}" [ref=e406]':
+                  - generic [ref=e407]: PUT
+                  - 'link "/api/templates/{id}" [ref=e410]':
+                    - /url: "#/Templates/TemplatesController_update"
+                    - generic [ref=e411]:
+                      - text: /api
+                      - text: /templates
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/templates/{id}" [ref=e414]':
+                  - img [ref=e415]
+              - generic [ref=e419] [cursor=pointer]:
+                - 'button "DELETE /api/templates/{id}" [ref=e420]':
+                  - generic [ref=e421]: DELETE
+                  - 'link "/api/templates/{id}" [ref=e424]':
+                    - /url: "#/Templates/TemplatesController_delete"
+                    - generic [ref=e425]:
+                      - text: /api
+                      - text: /templates
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/templates/{id}" [ref=e428]':
+                  - img [ref=e429]
+              - generic [ref=e433] [cursor=pointer]:
+                - 'button "POST /api/templates/{id}/preview" [ref=e434]':
+                  - generic [ref=e435]: POST
+                  - 'link "/api/templates/{id}/preview" [ref=e438]':
+                    - /url: "#/Templates/TemplatesController_preview"
+                    - generic [ref=e439]:
+                      - text: /api
+                      - text: /templates
+                      - text: "/{id}"
+                      - text: /preview
+                - generic "Copy to clipboard"
+                - 'button "post /api/templates/{id}/preview" [ref=e442]':
+                  - img [ref=e443]
+          - generic [ref=e446]:
+            - heading "Inbox Collapse operation" [level=3] [ref=e447] [cursor=pointer]:
+              - link "Inbox" [ref=e448]:
+                - /url: "#/Inbox"
+              - button "Collapse operation" [expanded] [ref=e449]:
+                - img [ref=e450]
+            - generic [ref=e453]:
+              - generic [ref=e456] [cursor=pointer]:
+                - button "GET /api/inbox/threads" [ref=e457]:
+                  - generic [ref=e458]: GET
+                  - link "/api/inbox/threads" [ref=e461]:
+                    - /url: "#/Inbox/InboxController_list"
+                    - generic [ref=e462]:
+                      - text: /api
+                      - text: /inbox
+                      - text: /threads
+                - generic "Copy to clipboard"
+                - button "get /api/inbox/threads" [ref=e465]:
+                  - img [ref=e466]
+              - generic [ref=e470] [cursor=pointer]:
+                - 'button "GET /api/inbox/threads/{id}" [ref=e471]':
+                  - generic [ref=e472]: GET
+                  - 'link "/api/inbox/threads/{id}" [ref=e475]':
+                    - /url: "#/Inbox/InboxController_get"
+                    - generic [ref=e476]:
+                      - text: /api
+                      - text: /inbox
+                      - text: /threads
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "get /api/inbox/threads/{id}" [ref=e479]':
+                  - img [ref=e480]
+              - generic [ref=e484] [cursor=pointer]:
+                - 'button "POST /api/inbox/threads/{id}/reply" [ref=e485]':
+                  - generic [ref=e486]: POST
+                  - 'link "/api/inbox/threads/{id}/reply" [ref=e489]':
+                    - /url: "#/Inbox/InboxController_reply"
+                    - generic [ref=e490]:
+                      - text: /api
+                      - text: /inbox
+                      - text: /threads
+                      - text: "/{id}"
+                      - text: /reply
+                - generic "Copy to clipboard"
+                - 'button "post /api/inbox/threads/{id}/reply" [ref=e493]':
+                  - img [ref=e494]
+              - generic [ref=e498] [cursor=pointer]:
+                - 'button "PUT /api/inbox/threads/{id}/assign" [ref=e499]':
+                  - generic [ref=e500]: PUT
+                  - 'link "/api/inbox/threads/{id}/assign" [ref=e503]':
+                    - /url: "#/Inbox/InboxController_assign"
+                    - generic [ref=e504]:
+                      - text: /api
+                      - text: /inbox
+                      - text: /threads
+                      - text: "/{id}"
+                      - text: /assign
+                - generic "Copy to clipboard"
+                - 'button "put /api/inbox/threads/{id}/assign" [ref=e507]':
+                  - img [ref=e508]
+              - generic [ref=e512] [cursor=pointer]:
+                - 'button "PUT /api/inbox/threads/{id}/status" [ref=e513]':
+                  - generic [ref=e514]: PUT
+                  - 'link "/api/inbox/threads/{id}/status" [ref=e517]':
+                    - /url: "#/Inbox/InboxController_updateStatus"
+                    - generic [ref=e518]:
+                      - text: /api
+                      - text: /inbox
+                      - text: /threads
+                      - text: "/{id}"
+                      - text: /status
+                - generic "Copy to clipboard"
+                - 'button "put /api/inbox/threads/{id}/status" [ref=e521]':
+                  - img [ref=e522]
+          - generic [ref=e525]:
+            - heading "Reports Collapse operation" [level=3] [ref=e526] [cursor=pointer]:
+              - link "Reports" [ref=e527]:
+                - /url: "#/Reports"
+              - button "Collapse operation" [expanded] [ref=e528]:
+                - img [ref=e529]
+            - generic [ref=e532]:
+              - generic [ref=e535] [cursor=pointer]:
+                - button "GET /api/reports/dashboard" [ref=e536]:
+                  - generic [ref=e537]: GET
+                  - link "/api/reports/dashboard" [ref=e540]:
+                    - /url: "#/Reports/ReportsController_dashboard"
+                    - generic [ref=e541]:
+                      - text: /api
+                      - text: /reports
+                      - text: /dashboard
+                - generic "Copy to clipboard"
+                - button "get /api/reports/dashboard" [ref=e544]:
+                  - img [ref=e545]
+              - generic [ref=e549] [cursor=pointer]:
+                - button "GET /api/reports/funnel" [ref=e550]:
+                  - generic [ref=e551]: GET
+                  - link "/api/reports/funnel" [ref=e554]:
+                    - /url: "#/Reports/ReportsController_funnel"
+                    - generic [ref=e555]:
+                      - text: /api
+                      - text: /reports
+                      - text: /funnel
+                - generic "Copy to clipboard"
+                - button "get /api/reports/funnel" [ref=e558]:
+                  - img [ref=e559]
+              - generic [ref=e563] [cursor=pointer]:
+                - button "GET /api/reports/export" [ref=e564]:
+                  - generic [ref=e565]: GET
+                  - link "/api/reports/export" [ref=e568]:
+                    - /url: "#/Reports/ReportsController_export"
+                    - generic [ref=e569]:
+                      - text: /api
+                      - text: /reports
+                      - text: /export
+                - generic "Copy to clipboard"
+                - button "get /api/reports/export" [ref=e572]:
+                  - img [ref=e573]
+          - generic [ref=e576]:
+            - heading "Settings Collapse operation" [level=3] [ref=e577] [cursor=pointer]:
+              - link "Settings" [ref=e578]:
+                - /url: "#/Settings"
+              - button "Collapse operation" [expanded] [ref=e579]:
+                - img [ref=e580]
+            - generic [ref=e583]:
+              - generic [ref=e586] [cursor=pointer]:
+                - button "GET /api/settings/integrations" [ref=e587]:
+                  - generic [ref=e588]: GET
+                  - link "/api/settings/integrations" [ref=e591]:
+                    - /url: "#/Settings/SettingsController_getApiKeys"
+                    - generic [ref=e592]:
+                      - text: /api
+                      - text: /settings
+                      - text: /integrations
+                - generic "Copy to clipboard"
+                - button "get /api/settings/integrations" [ref=e595]:
+                  - img [ref=e596]
+              - generic [ref=e600] [cursor=pointer]:
+                - button "POST /api/settings/integrations" [ref=e601]:
+                  - generic [ref=e602]: POST
+                  - link "/api/settings/integrations" [ref=e605]:
+                    - /url: "#/Settings/SettingsController_upsertApiKey"
+                    - generic [ref=e606]:
+                      - text: /api
+                      - text: /settings
+                      - text: /integrations
+                - generic "Copy to clipboard"
+                - button "post /api/settings/integrations" [ref=e609]:
+                  - img [ref=e610]
+              - generic [ref=e614] [cursor=pointer]:
+                - button "GET /api/settings/email-accounts" [ref=e615]:
+                  - generic [ref=e616]: GET
+                  - link "/api/settings/email-accounts" [ref=e619]:
+                    - /url: "#/Settings/SettingsController_listEmailAccounts"
+                    - generic [ref=e620]:
+                      - text: /api
+                      - text: /settings
+                      - text: /email-accounts
+                - generic "Copy to clipboard"
+                - button "get /api/settings/email-accounts" [ref=e623]:
+                  - img [ref=e624]
+              - generic [ref=e628] [cursor=pointer]:
+                - button "POST /api/settings/email-accounts" [ref=e629]:
+                  - generic [ref=e630]: POST
+                  - link "/api/settings/email-accounts" [ref=e633]:
+                    - /url: "#/Settings/SettingsController_createEmailAccount"
+                    - generic [ref=e634]:
+                      - text: /api
+                      - text: /settings
+                      - text: /email-accounts
+                - generic "Copy to clipboard"
+                - button "post /api/settings/email-accounts" [ref=e637]:
+                  - img [ref=e638]
+              - generic [ref=e642] [cursor=pointer]:
+                - 'button "PUT /api/settings/email-accounts/{id}" [ref=e643]':
+                  - generic [ref=e644]: PUT
+                  - 'link "/api/settings/email-accounts/{id}" [ref=e647]':
+                    - /url: "#/Settings/SettingsController_updateEmailAccount"
+                    - generic [ref=e648]:
+                      - text: /api
+                      - text: /settings
+                      - text: /email-accounts
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/settings/email-accounts/{id}" [ref=e651]':
+                  - img [ref=e652]
+              - generic [ref=e656] [cursor=pointer]:
+                - 'button "DELETE /api/settings/email-accounts/{id}" [ref=e657]':
+                  - generic [ref=e658]: DELETE
+                  - 'link "/api/settings/email-accounts/{id}" [ref=e661]':
+                    - /url: "#/Settings/SettingsController_deleteEmailAccount"
+                    - generic [ref=e662]:
+                      - text: /api
+                      - text: /settings
+                      - text: /email-accounts
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/settings/email-accounts/{id}" [ref=e665]':
+                  - img [ref=e666]
+              - generic [ref=e670] [cursor=pointer]:
+                - button "GET /api/settings/send-channels" [ref=e671]:
+                  - generic [ref=e672]: GET
+                  - link "/api/settings/send-channels" [ref=e675]:
+                    - /url: "#/Settings/SettingsController_listSendChannels"
+                    - generic [ref=e676]:
+                      - text: /api
+                      - text: /settings
+                      - text: /send-channels
+                - generic "Copy to clipboard"
+                - button "get /api/settings/send-channels" [ref=e679]:
+                  - img [ref=e680]
+              - generic [ref=e684] [cursor=pointer]:
+                - button "POST /api/settings/send-channels" [ref=e685]:
+                  - generic [ref=e686]: POST
+                  - link "/api/settings/send-channels" [ref=e689]:
+                    - /url: "#/Settings/SettingsController_createSendChannel"
+                    - generic [ref=e690]:
+                      - text: /api
+                      - text: /settings
+                      - text: /send-channels
+                - generic "Copy to clipboard"
+                - button "post /api/settings/send-channels" [ref=e693]:
+                  - img [ref=e694]
+              - generic [ref=e698] [cursor=pointer]:
+                - 'button "DELETE /api/settings/send-channels/{id}" [ref=e699]':
+                  - generic [ref=e700]: DELETE
+                  - 'link "/api/settings/send-channels/{id}" [ref=e703]':
+                    - /url: "#/Settings/SettingsController_deleteSendChannel"
+                    - generic [ref=e704]:
+                      - text: /api
+                      - text: /settings
+                      - text: /send-channels
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/settings/send-channels/{id}" [ref=e707]':
+                  - img [ref=e708]
+              - generic [ref=e712] [cursor=pointer]:
+                - button "GET /api/settings/blacklist" [ref=e713]:
+                  - generic [ref=e714]: GET
+                  - link "/api/settings/blacklist" [ref=e717]:
+                    - /url: "#/Settings/SettingsController_listBlacklist"
+                    - generic [ref=e718]:
+                      - text: /api
+                      - text: /settings
+                      - text: /blacklist
+                - generic "Copy to clipboard"
+                - button "get /api/settings/blacklist" [ref=e721]:
+                  - img [ref=e722]
+              - generic [ref=e726] [cursor=pointer]:
+                - button "POST /api/settings/blacklist" [ref=e727]:
+                  - generic [ref=e728]: POST
+                  - link "/api/settings/blacklist" [ref=e731]:
+                    - /url: "#/Settings/SettingsController_addBlacklist"
+                    - generic [ref=e732]:
+                      - text: /api
+                      - text: /settings
+                      - text: /blacklist
+                - generic "Copy to clipboard"
+                - button "post /api/settings/blacklist" [ref=e735]:
+                  - img [ref=e736]
+              - generic [ref=e740] [cursor=pointer]:
+                - 'button "DELETE /api/settings/blacklist/{id}" [ref=e741]':
+                  - generic [ref=e742]: DELETE
+                  - 'link "/api/settings/blacklist/{id}" [ref=e745]':
+                    - /url: "#/Settings/SettingsController_removeBlacklist"
+                    - generic [ref=e746]:
+                      - text: /api
+                      - text: /settings
+                      - text: /blacklist
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/settings/blacklist/{id}" [ref=e749]':
+                  - img [ref=e750]
+              - generic [ref=e754] [cursor=pointer]:
+                - button "GET /api/settings/users" [ref=e755]:
+                  - generic [ref=e756]: GET
+                  - link "/api/settings/users" [ref=e759]:
+                    - /url: "#/Settings/SettingsController_listUsers"
+                    - generic [ref=e760]:
+                      - text: /api
+                      - text: /settings
+                      - text: /users
+                - generic "Copy to clipboard"
+                - button "get /api/settings/users" [ref=e763]:
+                  - img [ref=e764]
+              - generic [ref=e768] [cursor=pointer]:
+                - button "POST /api/settings/users" [ref=e769]:
+                  - generic [ref=e770]: POST
+                  - link "/api/settings/users" [ref=e773]:
+                    - /url: "#/Settings/SettingsController_createUser"
+                    - generic [ref=e774]:
+                      - text: /api
+                      - text: /settings
+                      - text: /users
+                - generic "Copy to clipboard"
+                - button "post /api/settings/users" [ref=e777]:
+                  - img [ref=e778]
+              - generic [ref=e782] [cursor=pointer]:
+                - 'button "PUT /api/settings/users/{id}" [ref=e783]':
+                  - generic [ref=e784]: PUT
+                  - 'link "/api/settings/users/{id}" [ref=e787]':
+                    - /url: "#/Settings/SettingsController_updateUser"
+                    - generic [ref=e788]:
+                      - text: /api
+                      - text: /settings
+                      - text: /users
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/settings/users/{id}" [ref=e791]':
+                  - img [ref=e792]
+              - generic [ref=e796] [cursor=pointer]:
+                - 'button "DELETE /api/settings/users/{id}" [ref=e797]':
+                  - generic [ref=e798]: DELETE
+                  - 'link "/api/settings/users/{id}" [ref=e801]':
+                    - /url: "#/Settings/SettingsController_deleteUser"
+                    - generic [ref=e802]:
+                      - text: /api
+                      - text: /settings
+                      - text: /users
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/settings/users/{id}" [ref=e805]':
+                  - img [ref=e806]
+              - generic [ref=e810] [cursor=pointer]:
+                - button "GET /api/settings/ai" [ref=e811]:
+                  - generic [ref=e812]: GET
+                  - link "/api/settings/ai" [ref=e815]:
+                    - /url: "#/Settings/SettingsController_getAiConfig"
+                    - generic [ref=e816]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                - generic "Copy to clipboard"
+                - button "get /api/settings/ai" [ref=e819]:
+                  - img [ref=e820]
+              - generic [ref=e824] [cursor=pointer]:
+                - button "PUT /api/settings/ai" [ref=e825]:
+                  - generic [ref=e826]: PUT
+                  - link "/api/settings/ai" [ref=e829]:
+                    - /url: "#/Settings/SettingsController_upsertAiConfig"
+                    - generic [ref=e830]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                - generic "Copy to clipboard"
+                - button "put /api/settings/ai" [ref=e833]:
+                  - img [ref=e834]
+              - generic [ref=e838] [cursor=pointer]:
+                - button "POST /api/settings/ai/extract" [ref=e839]:
+                  - generic [ref=e840]: POST
+                  - link "/api/settings/ai/extract" [ref=e843]:
+                    - /url: "#/Settings/SettingsController_extractProduct"
+                    - generic [ref=e844]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                      - text: /extract
+                - generic "Copy to clipboard"
+                - button "post /api/settings/ai/extract" [ref=e847]:
+                  - img [ref=e848]
+              - generic [ref=e852] [cursor=pointer]:
+                - button "GET /api/settings/ai/drafts" [ref=e853]:
+                  - generic [ref=e854]: GET
+                  - link "/api/settings/ai/drafts" [ref=e857]:
+                    - /url: "#/Settings/SettingsController_listAiDrafts"
+                    - generic [ref=e858]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                      - text: /drafts
+                - generic "Copy to clipboard"
+                - button "get /api/settings/ai/drafts" [ref=e861]:
+                  - img [ref=e862]
+              - generic [ref=e866] [cursor=pointer]:
+                - 'button "PUT /api/settings/ai/drafts/{id}" [ref=e867]':
+                  - generic [ref=e868]: PUT
+                  - 'link "/api/settings/ai/drafts/{id}" [ref=e871]':
+                    - /url: "#/Settings/SettingsController_updateAiDraft"
+                    - generic [ref=e872]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                      - text: /drafts
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "put /api/settings/ai/drafts/{id}" [ref=e875]':
+                  - img [ref=e876]
+              - generic [ref=e880] [cursor=pointer]:
+                - 'button "DELETE /api/settings/ai/drafts/{id}" [ref=e881]':
+                  - generic [ref=e882]: DELETE
+                  - 'link "/api/settings/ai/drafts/{id}" [ref=e885]':
+                    - /url: "#/Settings/SettingsController_deleteAiDraft"
+                    - generic [ref=e886]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                      - text: /drafts
+                      - text: "/{id}"
+                - generic "Copy to clipboard"
+                - 'button "delete /api/settings/ai/drafts/{id}" [ref=e889]':
+                  - img [ref=e890]
+              - generic [ref=e894] [cursor=pointer]:
+                - button "POST /api/settings/ai/trigger/run" [ref=e895]:
+                  - generic [ref=e896]: POST
+                  - link "/api/settings/ai/trigger/run" [ref=e899]:
+                    - /url: "#/Settings/SettingsController_triggerAiPipeline"
+                    - generic [ref=e900]:
+                      - text: /api
+                      - text: /settings
+                      - text: /ai
+                      - text: /trigger
+                      - text: /run
+                - generic "Copy to clipboard"
+                - button "post /api/settings/ai/trigger/run" [ref=e903]:
+                  - img [ref=e904]
+          - generic [ref=e907]:
+            - heading "Tracking Collapse operation" [level=3] [ref=e908] [cursor=pointer]:
+              - link "Tracking" [ref=e909]:
+                - /url: "#/Tracking"
+              - button "Collapse operation" [expanded] [ref=e910]:
+                - img [ref=e911]
+            - generic [ref=e914]:
+              - generic [ref=e917] [cursor=pointer]:
+                - 'button "GET /api/t/open/{trackingId}" [ref=e918]':
+                  - generic [ref=e919]: GET
+                  - 'link "/api/t/open/{trackingId}" [ref=e922]':
+                    - /url: "#/Tracking/TrackingController_trackOpen"
+                    - generic [ref=e923]:
+                      - text: /api
+                      - text: /t
+                      - text: /open
+                      - text: "/{trackingId}"
+                - generic "Copy to clipboard"
+                - 'button "get /api/t/open/{trackingId}" [ref=e926]':
+                  - img [ref=e927]
+              - generic [ref=e931] [cursor=pointer]:
+                - 'button "GET /api/t/click/{trackingId}" [ref=e932]':
+                  - generic [ref=e933]: GET
+                  - 'link "/api/t/click/{trackingId}" [ref=e936]':
+                    - /url: "#/Tracking/TrackingController_trackClick"
+                    - generic [ref=e937]:
+                      - text: /api
+                      - text: /t
+                      - text: /click
+                      - text: "/{trackingId}"
+                - generic "Copy to clipboard"
+                - 'button "get /api/t/click/{trackingId}" [ref=e940]':
+                  - img [ref=e941]
+        - generic [ref=e945]:
+          - heading "Schemas" [level=4] [ref=e946] [cursor=pointer]:
+            - button "Schemas" [expanded] [ref=e947]:
+              - generic [ref=e948]: Schemas
+              - img [ref=e949]
+          - generic [ref=e951]:
+            - button "RegisterDto" [ref=e954] [cursor=pointer]:
+              - generic [ref=e956]: RegisterDto
+            - button "LoginDto" [ref=e960] [cursor=pointer]:
+              - generic [ref=e962]: LoginDto
+            - button "CreateLeadDto" [ref=e966] [cursor=pointer]:
+              - generic [ref=e968]: CreateLeadDto
+            - button "CollectDto" [ref=e972] [cursor=pointer]:
+              - generic [ref=e974]: CollectDto
+            - button "CreateCampaignDto" [ref=e978] [cursor=pointer]:
+              - generic [ref=e980]: CreateCampaignDto

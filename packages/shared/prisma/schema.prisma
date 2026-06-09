@@ -31,6 +31,7 @@ model Tenant {
   inboxThreads  InboxThread[]
   sequences     Sequence[]
   dailyStats    DailyStats[]
+  aiConfig      AiConfig?
 
   @@map("tenants")
 }
@@ -260,6 +261,7 @@ model EmailAccount {
   id           String   @id @default(cuid())
   tenantId     String   @map("tenant_id")
   email        String
+  provider     String   @default("custom")
   smtpConfig   Json     @map("smtp_config")
   imapConfig   Json     @map("imap_config")
   dailyLimit   Int      @default(500) @map("daily_limit")
@@ -323,15 +325,17 @@ model InboxMessage {
 // Send channels (multi-provider management)
 // ============================================
 model SendChannel {
-  id         String   @id @default(cuid())
-  tenantId   String   @map("tenant_id")
-  provider   String
-  apiKey     String   @map("api_key")
-  dailyLimit Int      @default(300) @map("daily_limit")
-  dailySent  Int      @default(0) @map("daily_sent")
-  status     String   @default("active")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  provider     String
+  apiKey       String   @map("api_key")
+  senderEmail  String?  @map("sender_email")
+  senderName   String?  @map("sender_name")
+  dailyLimit   Int      @default(300) @map("daily_limit")
+  dailySent    Int      @default(0) @map("daily_sent")
+  status       String   @default("active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
@@ -417,4 +421,44 @@ model CampaignStats {
 
   @@unique([campaignId, date])
   @@map("campaign_stats")
+}
+
+// ============================================
+// AI Automation
+// ============================================
+model AiConfig {
+  id                 String    @id @default(cuid())
+  tenantId           String    @unique @map("tenant_id")
+  apiUrl             String    @default("https://openrouter.ai/api/v1/chat/completions") @map("api_url")
+  apiKey             String    @map("api_key")
+  model              String    @default("deepseek/deepseek-v4-flash:free")
+  productDescription String    @default("") @map("product_description")
+  extractedKeywords  String    @default("") @map("extracted_keywords")
+  extractedIndustry  String    @default("") @map("extracted_industry")
+  extractedCountry   String    @default("") @map("extracted_country")
+  automationEnabled  Boolean   @default(false) @map("automation_enabled")
+  collectDefaults    Json      @default("{}") @map("collect_defaults")
+  lastCollectAt      DateTime? @map("last_collect_at")
+  lastWriteAt        DateTime? @map("last_write_at")
+  lastSendAt         DateTime? @map("last_send_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("ai_configs")
+}
+
+model AiEmailDraft {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  contactId   String?  @map("contact_id")
+  subject     String
+  body        String
+  status      String   @default("draft") // draft | approved | sent | rejected
+  sentAt      DateTime? @map("sent_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, status])
+  @@map("ai_email_drafts")
 }

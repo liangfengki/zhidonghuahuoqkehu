@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentTenant } from '../common/decorators/tenant.decorator';
 import { TemplatesService } from './templates.service';
 
-@Controller('api/templates')
+@Controller('templates')
 @UseGuards(JwtAuthGuard)
 export class TemplatesController {
   constructor(private templatesService: TemplatesService) {}
@@ -19,6 +19,11 @@ export class TemplatesController {
   @Put(':id')
   async update(@CurrentTenant() tenantId: string, @Param('id') id: string, @Body() dto: any) {
     return { success: true, data: await this.templatesService.update(tenantId, id, dto) };
+  }
+
+  @Delete(':id')
+  async delete(@CurrentTenant() tenantId: string, @Param('id') id: string) {
+    return { success: true, data: await this.templatesService.delete(tenantId, id) };
   }
 
   @Post(':id/preview')

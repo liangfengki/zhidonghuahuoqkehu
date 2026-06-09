@@ -1,5 +1,8 @@
 export { ApolloAdapter } from './adapters/apollo';
 export { HunterAdapter } from './adapters/hunter';
+export { OpenCorporatesAdapter } from './adapters/opencorporates';
+export { CompanySearchAdapter } from './adapters/company-search';
+export { WebScraperAdapter } from './adapters/web-scraper';
 export { EmailPatternFinder } from './adapters/pattern-finder';
 export { EmailValidator } from './validators/validator';
 export { RapidEmailVerifier } from './validators/rapid';

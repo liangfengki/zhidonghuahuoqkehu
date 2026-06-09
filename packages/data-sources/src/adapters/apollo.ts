@@ -24,6 +24,29 @@ export class ApolloAdapter implements IEmailFinder {
     } catch { return []; }
   }
 
+  async findByKeywords(keywords: string, apiKey: string, options?: { industry?: string; country?: string }): Promise<ContactResult[]> {
+    try {
+      const url = new URL(`${this.baseUrl}/contacts/search`);
+      url.searchParams.set('q_keywords', keywords);
+      url.searchParams.set('per_page', '50');
+      if (options?.industry) url.searchParams.set('q_organization_industry_tag_ids[]', options.industry);
+      if (options?.country) url.searchParams.set('person_locations[]', options.country);
+
+      const res = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+      });
+
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.contacts || []).map((c: any) => ({
+        firstName: c.first_name || '', lastName: c.last_name || '', email: c.email || '',
+        position: c.title || null, linkedinUrl: c.linkedin_url || null,
+        confidence: c.email ? 0.8 : 0.3, source: 'apollo', rawData: c,
+      }));
+    } catch { return []; }
+  }
+
   async findByName(firstName: string, lastName: string, domain: string, apiKey: string): Promise<ContactResult | null> {
     const contacts = await this.findByDomain(domain, apiKey);
     return contacts.find(c => c.firstName.toLowerCase() === firstName.toLowerCase() && c.lastName.toLowerCase() === lastName.toLowerCase()) || null;

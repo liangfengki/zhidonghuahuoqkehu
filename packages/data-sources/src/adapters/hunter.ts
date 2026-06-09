@@ -36,6 +36,22 @@ export class HunterAdapter implements IEmailFinder {
     } catch { return null; }
   }
 
+  async findByKeywords(keywords: string, apiKey: string, options?: { industry?: string; country?: string }): Promise<ContactResult[]> {
+    try {
+      // Hunter doesn't have direct keyword search, but we can search by company domain
+      // Use the domain-search endpoint with a query
+      const url = `${this.baseUrl}/domain-search?query=${encodeURIComponent(keywords)}&api_key=${apiKey}&limit=50`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return (data.data?.emails || []).map((e: any) => ({
+        firstName: e.first_name || '', lastName: e.last_name || '', email: e.value || '',
+        position: e.position || null, linkedinUrl: e.linkedin || null,
+        confidence: e.confidence ? e.confidence / 100 : 0.7, source: 'hunter', rawData: e,
+      }));
+    } catch { return []; }
+  }
+
   async getCredits(apiKey: string): Promise<{ remaining: number; limit: number }> {
     try {
       const res = await fetch(`${this.baseUrl}/account?api_key=${apiKey}`);

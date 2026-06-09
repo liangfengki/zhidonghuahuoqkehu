@@ -51,4 +51,10 @@ export class TemplatesService {
     const rendered = this.renderer.renderWithDefaults(template.subject, template.body, sampleVars);
     return { original: template, rendered };
   }
+
+  async delete(tenantId: string, id: string) {
+    const template = await this.prisma.emailTemplate.findFirst({ where: { id, tenantId } });
+    if (!template) throw new NotFoundException('模板不存在');
+    return this.prisma.emailTemplate.delete({ where: { id } });
+  }
 }

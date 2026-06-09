@@ -18,23 +18,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (token) {
-      apiGet("/auth/me").then((res: any) => {
-        if (res.success) setAuth({ user: res.data, token, loading: false });
-        else { localStorage.removeItem("auth_token"); setAuth({ user: null, token: null, loading: false }); }
+      apiGet("/auth/me").then((user: any) => {
+        setAuth({ user, token, loading: false });
       }).catch(() => { localStorage.removeItem("auth_token"); setAuth({ user: null, token: null, loading: false }); });
     } else setAuth({ user: null, token: null, loading: false });
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const res: any = await apiPost("/auth/login", { email, password });
-    localStorage.setItem("auth_token", res.data.accessToken);
-    setAuth({ user: res.data.user, token: res.data.accessToken, loading: false });
+    localStorage.setItem("auth_token", res.accessToken);
+    setAuth({ user: res.user, token: res.accessToken, loading: false });
   }, []);
 
   const register = useCallback(async (data: { email: string; password: string; name: string; companyName?: string }) => {
     const res: any = await apiPost("/auth/register", data);
-    localStorage.setItem("auth_token", res.data.accessToken);
-    setAuth({ user: res.data.user, token: res.data.accessToken, loading: false });
+    localStorage.setItem("auth_token", res.accessToken);
+    setAuth({ user: res.user, token: res.accessToken, loading: false });
   }, []);
 
   const logout = useCallback(() => { localStorage.removeItem("auth_token"); setAuth({ user: null, token: null, loading: false }); }, []);

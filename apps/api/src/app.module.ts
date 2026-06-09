@@ -10,6 +10,8 @@ import { InboxModule } from './inbox/inbox.module';
 import { ReportsModule } from './reports/reports.module';
 import { SettingsModule } from './settings/settings.module';
 import { QueueModule } from './queue/queue.module';
+import { TrackingModule } from './tracking/tracking.module';
+import { WorkflowModule } from './workflow/workflow.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { QueueModule } from './queue/queue.module';
     ReportsModule,
     SettingsModule,
     QueueModule,
+    TrackingModule,
+    WorkflowModule,
   ],
 })
 export class AppModule {}
